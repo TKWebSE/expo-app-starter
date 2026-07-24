@@ -8,7 +8,16 @@ export type SignUpInput = {
   password: string;
 };
 
-export type AuthStateListener = (user: AuthUser | null) => void;
+export type ChangeEmailInput = {
+  currentEmail: string;
+  newEmail: string;
+  password: string;
+};
+
+export type AuthStateListener = (
+  user: AuthUser | null,
+  reason?: 'signed_out',
+) => void;
 
 export interface AuthRepository {
   getCurrentUser(): Promise<AuthUser | null>;
@@ -19,4 +28,6 @@ export interface AuthRepository {
   resendSignupConfirmation(email: string): Promise<void>;
   sendPasswordReset(email: string): Promise<void>;
   updatePassword(password: string): Promise<void>;
+  updateEmail(input: ChangeEmailInput): Promise<void>;
+  deleteAccount(input: SignUpInput): Promise<void>;
 }

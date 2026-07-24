@@ -1,13 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+const files = execFileSync(
+  'git',
+  ['ls-files', '--cached', '--others', '--exclude-standard'],
+  { encoding: 'utf8' },
+)
   .split(/\r?\n/)
   .filter(Boolean)
   .filter((file) => !file.endsWith('package-lock.json'));
 const suspicious = [
-  /service[_ -]?role/i,
-  /SUPABASE_SERVICE_ROLE_KEY/,
+  /SUPABASE_SERVICE_ROLE_KEY\s*=\s*\S+/,
+  /service[_ -]?role(?:_key)?\s*[:=]\s*['"`][A-Za-z0-9._-]{20,}/i,
   /-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/,
 ];
 const allowed = new Set([
@@ -28,6 +32,10 @@ for (const file of files) {
   } catch {
     continue;
   }
+  content = content.replace(
+    /Deno\.env\.get\(['"]SUPABASE_SERVICE_ROLE_KEY['"]\)/g,
+    '',
+  );
   if (suspicious.some((pattern) => pattern.test(content))) findings.push(file);
 }
 

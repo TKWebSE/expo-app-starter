@@ -25,6 +25,8 @@ function createRepository(
     resendSignupConfirmation: vi.fn().mockResolvedValue(undefined),
     sendPasswordReset: vi.fn().mockResolvedValue(undefined),
     updatePassword: vi.fn().mockResolvedValue(undefined),
+    updateEmail: vi.fn().mockResolvedValue(undefined),
+    deleteAccount: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -57,6 +59,26 @@ describe('authStore', () => {
     expect(store.getState()).toMatchObject({
       status: 'unauthenticated',
       user: null,
+    });
+  });
+
+  it('予期しないサインアウト時はセッション期限切れを案内する', async () => {
+    let listener: AuthStateListener | undefined;
+    const repository = createRepository({
+      getCurrentUser: vi.fn().mockResolvedValue(user),
+      onAuthStateChange: vi.fn((nextListener: AuthStateListener) => {
+        listener = nextListener;
+        return () => undefined;
+      }),
+    });
+    const store = createAuthStore(repository);
+    await store.getState().initialize();
+
+    listener?.(null, 'signed_out');
+
+    expect(store.getState()).toMatchObject({
+      status: 'unauthenticated',
+      error: 'セッションの有効期限が切れました。もう一度ログインしてください',
     });
   });
 
@@ -132,13 +154,24 @@ describe('authStore', () => {
 
   it('確認対象メールアドレスへ確認メールを再送する', async () => {
     const repository = createRepository();
-    const store = createAuthStore(repository);
+    let now = 1_000;
+    const store = createAuthStore(repository, () => now);
     await store.getState().signUp({ email: user.email, password: 'password' });
+    now += 60_000;
 
     await expect(store.getState().resendVerification()).resolves.toBe(true);
     expect(repository.resendSignupConfirmation).toHaveBeenCalledWith(
       user.email,
     );
+  });
+
+  it('確認メールは送信後60秒間再送しない', async () => {
+    const repository = createRepository();
+    const store = createAuthStore(repository, () => 1_000);
+    await store.getState().signUp({ email: user.email, password: 'password' });
+
+    await expect(store.getState().resendVerification()).resolves.toBe(false);
+    expect(repository.resendSignupConfirmation).not.toHaveBeenCalled();
   });
 
   it('パスワード再設定メールを送信する', async () => {
@@ -160,6 +193,40 @@ describe('authStore', () => {
     );
     expect(repository.updatePassword).toHaveBeenCalledWith('new-password');
     expect(repository.signOut).toHaveBeenCalled();
+    expect(store.getState().status).toBe('unauthenticated');
+  });
+
+  it('再認証情報を使ってメール変更を要求する', async () => {
+    const repository = createRepository({
+      getCurrentUser: vi.fn().mockResolvedValue(user),
+    });
+    const store = createAuthStore(repository);
+    await store.getState().initialize();
+
+    await expect(
+      store.getState().updateEmail('new@example.com', 'password'),
+    ).resolves.toBe(true);
+    expect(repository.updateEmail).toHaveBeenCalledWith({
+      currentEmail: user.email,
+      newEmail: 'new@example.com',
+      password: 'password',
+    });
+  });
+
+  it('再認証後にアカウントを削除して未認証にする', async () => {
+    const repository = createRepository({
+      getCurrentUser: vi.fn().mockResolvedValue(user),
+    });
+    const store = createAuthStore(repository);
+    await store.getState().initialize();
+
+    await expect(store.getState().deleteAccount('password')).resolves.toBe(
+      true,
+    );
+    expect(repository.deleteAccount).toHaveBeenCalledWith({
+      email: user.email,
+      password: 'password',
+    });
     expect(store.getState().status).toBe('unauthenticated');
   });
 });

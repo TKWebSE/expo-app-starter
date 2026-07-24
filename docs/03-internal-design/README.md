@@ -179,3 +179,17 @@ V2は推測で機能を増やすのではなく、実利用で確認できた問
 - テーマはProviderが解決済みパレットを公開し、画面と共通UIは固定色を直接参照しない
 - 認証メールの再送制御はStoreから分離し、時刻をテスト可能な形で注入する
 - DB・RLSテストはSupabase CLIでMigrationから再構築したDBに対して実行する
+
+### アカウント削除の実装境界
+
+- クライアントは現在のパスワードでSupabase Authへ再認証する
+- 認証済みJWTを`delete-account` Edge Functionへ送る
+- FunctionはJWTから利用者を再取得し、Service Role Keyを使って同一IDだけを削除する
+- `profiles.id`外部キーは`auth.users.id on delete cascade`とする
+- Service Role Keyをフロントエンド、Migration、ログへ出力しない
+
+### 認証強化の状態
+
+- 確認メール再送可能時刻をAuth Storeで管理し、時刻関数をテスト時に差し替える
+- メール変更は現在の認証情報で再認証してから`updateUser`を呼ぶ
+- 認証状態監視で予期しない`SIGNED_OUT`を受けた場合だけ期限切れエラーを公開する

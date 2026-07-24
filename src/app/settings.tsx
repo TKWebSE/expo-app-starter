@@ -1,4 +1,4 @@
-import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -55,6 +55,10 @@ export default function SettingsScreen() {
           label="プロフィールを編集"
           onPress={() => router.push('/profile')}
         />
+        <AppButton
+          label="メールアドレスを変更"
+          onPress={() => router.push('/change-email' as Href)}
+        />
       </View>
 
       <View style={styles.card}>
@@ -101,6 +105,13 @@ export default function SettingsScreen() {
           loading={isSubmitting}
           onPress={() => setConfirmsLogout(true)}
         />
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/delete-account' as Href)}
+          style={styles.dangerLink}
+        >
+          <Text style={styles.dangerText}>アカウントを削除</Text>
+        </Pressable>
       </View>
       <AppConfirmDialog
         confirmLabel="ログアウト"
@@ -152,6 +163,16 @@ function createStyles(colors: ThemeColors) {
     themeOptionActive: {
       borderColor: colors.primary,
       backgroundColor: colors.primary + '26',
+    },
+    dangerLink: {
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    dangerText: {
+      color: colors.error,
+      fontSize: typography.body,
+      fontWeight: '700',
     },
   });
 }

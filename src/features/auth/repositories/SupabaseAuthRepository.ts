@@ -9,6 +9,7 @@ import type {
   AuthRepository,
   AuthStateListener,
   AuthUser,
+  ChangeEmailInput,
   SignUpInput,
 } from '../types/AuthRepository';
 
@@ -44,8 +45,11 @@ export class SupabaseAuthRepository implements AuthRepository {
   onAuthStateChange(listener: AuthStateListener): () => void {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      listener(session ? toAuthUser(session.user) : null);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      listener(
+        session ? toAuthUser(session.user) : null,
+        event === 'SIGNED_OUT' ? 'signed_out' : undefined,
+      );
     });
 
     return () => subscription.unsubscribe();
@@ -126,5 +130,54 @@ export class SupabaseAuthRepository implements AuthRepository {
     if (error) {
       throw authenticationError('パスワードを更新できませんでした', error);
     }
+  }
+
+  async updateEmail({
+    currentEmail,
+    newEmail,
+    password,
+  }: ChangeEmailInput): Promise<void> {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: currentEmail,
+      password,
+    });
+    if (signInError) {
+      throw authenticationError(
+        '現在のパスワードを確認してください',
+        signInError,
+      );
+    }
+
+    const { error } = await supabase.auth.updateUser(
+      { email: newEmail },
+      {
+        emailRedirectTo:
+          typeof window === 'undefined'
+            ? Linking.createURL('/settings')
+            : `${window.location.origin}/settings`,
+      },
+    );
+    if (error) {
+      throw authenticationError('メールアドレスを変更できませんでした', error);
+    }
+  }
+
+  async deleteAccount({ email, password }: SignUpInput): Promise<void> {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError) {
+      throw authenticationError(
+        '現在のパスワードを確認してください',
+        signInError,
+      );
+    }
+
+    const { error } = await supabase.functions.invoke('delete-account');
+    if (error) {
+      throw authenticationError('アカウントを削除できませんでした', error);
+    }
+    await supabase.auth.signOut({ scope: 'local' });
   }
 }

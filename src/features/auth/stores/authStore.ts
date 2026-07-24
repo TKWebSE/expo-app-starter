@@ -14,6 +14,7 @@ export type AuthStore = {
   isSubmitting: boolean;
   error: string | null;
   pendingVerificationEmail: string | null;
+  verificationResendAvailableAt: number | null;
   initialize: () => Promise<void>;
   signIn: (input: SignUpInput) => Promise<boolean>;
   signUp: (input: SignUpInput) => Promise<boolean>;
@@ -21,6 +22,8 @@ export type AuthStore = {
   resendVerification: () => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   updatePassword: (password: string) => Promise<boolean>;
+  updateEmail: (newEmail: string, password: string) => Promise<boolean>;
+  deleteAccount: (password: string) => Promise<boolean>;
   clearError: () => void;
   dispose: () => void;
 };
@@ -33,6 +36,7 @@ function messageFrom(error: unknown): string {
 
 export function createAuthStore(
   repository: AuthRepository,
+  now: () => number = Date.now,
 ): StoreApi<AuthStore> {
   let unsubscribe: (() => void) | null = null;
 
@@ -42,6 +46,7 @@ export function createAuthStore(
     isSubmitting: false,
     error: null,
     pendingVerificationEmail: null,
+    verificationResendAvailableAt: null,
 
     initialize: async () => {
       try {
@@ -60,10 +65,17 @@ export function createAuthStore(
       }
 
       unsubscribe?.();
-      unsubscribe = repository.onAuthStateChange((user) => {
+      unsubscribe = repository.onAuthStateChange((user, reason) => {
+        const sessionExpired =
+          reason === 'signed_out' &&
+          get().status === 'authenticated' &&
+          !get().isSubmitting;
         set({
           status: user ? 'authenticated' : 'unauthenticated',
           user,
+          error: sessionExpired
+            ? 'セッションの有効期限が切れました。もう一度ログインしてください'
+            : get().error,
         });
       });
     },
@@ -104,6 +116,7 @@ export function createAuthStore(
         set({
           isSubmitting: false,
           pendingVerificationEmail: user.email,
+          verificationResendAvailableAt: now() + 60_000,
         });
         return true;
       } catch (error) {
@@ -141,10 +154,17 @@ export function createAuthStore(
     resendVerification: async () => {
       const email = get().pendingVerificationEmail;
       if (!email || get().isSubmitting) return false;
+      if ((get().verificationResendAvailableAt ?? 0) > now()) {
+        set({ error: '確認メールを再送できるまでお待ちください' });
+        return false;
+      }
       set({ isSubmitting: true, error: null });
       try {
         await repository.resendSignupConfirmation(email);
-        set({ isSubmitting: false });
+        set({
+          isSubmitting: false,
+          verificationResendAvailableAt: now() + 60_000,
+        });
         return true;
       } catch (error) {
         set({ isSubmitting: false, error: messageFrom(error) });
@@ -172,6 +192,38 @@ export function createAuthStore(
         await repository.updatePassword(password);
         await repository.signOut();
         set({ status: 'unauthenticated', user: null, isSubmitting: false });
+        return true;
+      } catch (error) {
+        set({ isSubmitting: false, error: messageFrom(error) });
+        return false;
+      }
+    },
+
+    updateEmail: async (newEmail, password) => {
+      const currentEmail = get().user?.email;
+      if (!currentEmail || get().isSubmitting) return false;
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.updateEmail({ currentEmail, newEmail, password });
+        set({ isSubmitting: false });
+        return true;
+      } catch (error) {
+        set({ isSubmitting: false, error: messageFrom(error) });
+        return false;
+      }
+    },
+
+    deleteAccount: async (password) => {
+      const email = get().user?.email;
+      if (!email || get().isSubmitting) return false;
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.deleteAccount({ email, password });
+        set({
+          status: 'unauthenticated',
+          user: null,
+          isSubmitting: false,
+        });
         return true;
       } catch (error) {
         set({ isSubmitting: false, error: messageFrom(error) });

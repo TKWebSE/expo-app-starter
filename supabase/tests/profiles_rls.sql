@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(11);
 
 select has_table('public', 'profiles', 'profiles exists');
 select policies_are(
@@ -58,6 +58,14 @@ select throws_ok(
   '42501',
   'permission denied for table profiles',
   'client roles have no permission to delete profiles'
+);
+
+reset role;
+delete from auth.users
+where id = '00000000-0000-0000-0000-000000000002';
+select is_empty(
+  $$select id from public.profiles where id = '00000000-0000-0000-0000-000000000002'$$,
+  'deleting an auth user cascades to their profile'
 );
 
 select * from finish();

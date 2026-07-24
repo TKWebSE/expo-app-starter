@@ -1,5 +1,5 @@
 import { Link, Redirect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { AppButton } from '@/components/ui/AppButton';
@@ -15,10 +15,26 @@ export default function VerifyEmailScreen() {
   const email = useAuthStore((state) => state.pendingVerificationEmail);
   const [notice, setNotice] = useState<string | null>(null);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
+  const resendAvailableAt = useAuthStore(
+    (state) => state.verificationResendAvailableAt,
+  );
   const error = useAuthStore((state) => state.error);
   const resend = useAuthStore((state) => state.resendVerification);
   const clearError = useAuthStore((state) => state.clearError);
   const closeNotice = useCallback(() => setNotice(null), []);
+  const [currentTime, setCurrentTime] = useState(0);
+  useEffect(() => {
+    const initialTimer = setTimeout(() => setCurrentTime(Date.now()), 0);
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1_000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(timer);
+    };
+  }, []);
+  const remainingSeconds = Math.max(
+    0,
+    Math.ceil(((resendAvailableAt ?? 0) - currentTime) / 1_000),
+  );
 
   if (!email) {
     return <Redirect href="/signup" />;
@@ -48,7 +64,12 @@ export default function VerifyEmailScreen() {
           メールが届かない場合は、迷惑メールフォルダも確認してください。
         </Text>
         <AppButton
-          label="確認メールを再送"
+          disabled={remainingSeconds > 0}
+          label={
+            remainingSeconds > 0
+              ? `確認メールを再送（${remainingSeconds}秒後）`
+              : '確認メールを再送'
+          }
           loading={isSubmitting}
           onPress={async () => {
             if (await resend()) setNotice('確認メールを再送しました');

@@ -16,6 +16,7 @@ import { type ThemeColors, typography } from '@/theme/tokens';
 type Form = z.infer<typeof newPasswordSchema>;
 
 export default function NewPasswordScreen() {
+  const status = useAuthStore((state) => state.status);
   const { colors } = useThemePreference();
   const styles = createStyles(colors);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -52,46 +53,54 @@ export default function NewPasswordScreen() {
           </Link>
         }
       >
-        <Controller
-          control={control}
-          name="password"
-          render={({ field: { onBlur, onChange, value } }) => (
-            <AppTextField
-              autoComplete="new-password"
-              editable={!isSubmitting}
-              error={errors.password?.message}
-              label="新しいパスワード"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              required
-              secureTextEntry
-              value={value}
+        {status === 'unauthenticated' ? (
+          <Link href="/reset-password" style={styles.invalidLink}>
+            リンクが無効または期限切れです。再設定メールをもう一度送る
+          </Link>
+        ) : (
+          <>
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onBlur, onChange, value } }) => (
+                <AppTextField
+                  autoComplete="new-password"
+                  editable={!isSubmitting}
+                  error={errors.password?.message}
+                  label="新しいパスワード"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  required
+                  secureTextEntry
+                  value={value}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          control={control}
-          name="passwordConfirmation"
-          render={({ field: { onBlur, onChange, value } }) => (
-            <AppTextField
-              autoComplete="new-password"
-              editable={!isSubmitting}
-              error={errors.passwordConfirmation?.message}
-              label="パスワード確認"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              onSubmitEditing={() => void submit()}
-              required
-              secureTextEntry
-              value={value}
+            <Controller
+              control={control}
+              name="passwordConfirmation"
+              render={({ field: { onBlur, onChange, value } }) => (
+                <AppTextField
+                  autoComplete="new-password"
+                  editable={!isSubmitting}
+                  error={errors.passwordConfirmation?.message}
+                  label="パスワード確認"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  onSubmitEditing={() => void submit()}
+                  required
+                  secureTextEntry
+                  value={value}
+                />
+              )}
             />
-          )}
-        />
-        <AppButton
-          label="パスワードを設定"
-          loading={isSubmitting}
-          onPress={() => void submit()}
-        />
+            <AppButton
+              label="パスワードを設定"
+              loading={isSubmitting}
+              onPress={() => void submit()}
+            />
+          </>
+        )}
       </AuthScreen>
     </>
   );
@@ -101,6 +110,12 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     link: {
       color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    invalidLink: {
+      color: colors.error,
       fontSize: typography.body,
       fontWeight: '600',
       textAlign: 'center',

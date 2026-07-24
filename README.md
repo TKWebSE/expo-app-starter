@@ -46,3 +46,11 @@ Supabase CLIとDockerを使用できる環境では、次のコマンドでMigra
 supabase start
 npm run test:db
 ```
+
+アカウント削除を利用する環境では、Supabase Edge Functionをデプロイします。
+
+```bash
+supabase functions deploy delete-account
+```
+
+`SUPABASE_SERVICE_ROLE_KEY`はSupabase側のFunction環境だけで扱い、アプリの環境変数には追加しないでください。
