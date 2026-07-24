@@ -17,4 +17,8 @@ describe('Supabase local auth config', () => {
   it('認証メールの再送を60秒制限する', () => {
     expect(config).toContain('max_frequency = "60s"');
   });
+
+  it('新規登録時にメール確認を必須にする', () => {
+    expect(config).toContain('enable_confirmations = true');
+  });
 });

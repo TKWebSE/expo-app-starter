@@ -70,6 +70,10 @@ export class SupabaseAuthRepository implements AuthRepository {
       throw authenticationError('アカウントを登録できませんでした', error);
     }
 
+    if (data.session) {
+      await supabase.auth.signOut({ scope: 'local' });
+    }
+
     return toAuthUser(data.user);
   }
 

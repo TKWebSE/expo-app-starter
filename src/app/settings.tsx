@@ -1,4 +1,11 @@
-import { Redirect, router, useLocalSearchParams, type Href } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Link,
+  Redirect,
+  router,
+  useLocalSearchParams,
+  type Href,
+} from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -7,11 +14,15 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppConfirmDialog } from '@/components/ui/AppConfirmDialog';
 import { AppSnackbar } from '@/components/ui/AppSnackbar';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
+import { SupabaseProfileRepository } from '@/features/profile/repositories/SupabaseProfileRepository';
+import { loadProfile } from '@/features/profile/utils/profileWorkflow';
 import {
   type ThemePreference,
   useThemePreference,
 } from '@/theme/ThemeProvider';
 import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
+
+const profileRepository = new SupabaseProfileRepository();
 
 export default function SettingsScreen() {
   const params = useLocalSearchParams<{ notice?: string }>();
@@ -26,6 +37,11 @@ export default function SettingsScreen() {
   const closeNotice = useCallback(() => setNotice(null), []);
   const { colors, preference, setPreference } = useThemePreference();
   const styles = createStyles(colors);
+  const profileQuery = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: () => loadProfile(profileRepository, user!.id),
+    enabled: Boolean(user?.id),
+  });
 
   if (status === 'unauthenticated') {
     return <Redirect href="/login" />;
@@ -47,6 +63,12 @@ export default function SettingsScreen() {
       />
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>アカウント</Text>
+        <Text style={styles.label}>表示名</Text>
+        <Text selectable style={styles.value}>
+          {profileQuery.isPending
+            ? '読み込み中…'
+            : profileQuery.data?.displayName || '未設定'}
+        </Text>
         <Text style={styles.label}>メールアドレス</Text>
         <Text selectable style={styles.value}>
           {user?.email}
@@ -93,8 +115,12 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>アプリ情報</Text>
         <Text style={styles.value}>Expo App Starter v0.1.0</Text>
-        <Text style={styles.link}>利用規約</Text>
-        <Text style={styles.link}>プライバシーポリシー</Text>
+        <Link href={'/terms' as Href} style={styles.link}>
+          利用規約
+        </Link>
+        <Link href={'/privacy' as Href} style={styles.link}>
+          プライバシーポリシー
+        </Link>
       </View>
 
       <View style={styles.card}>

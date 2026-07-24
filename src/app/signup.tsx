@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, router } from 'expo-router';
+import { Link, router, type Href } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
@@ -50,9 +50,17 @@ export default function SignupScreen() {
         description="確認メールを受け取れるアドレスを使用してください"
         footer={
           <View style={styles.footer}>
-            <Text style={styles.policy}>
-              登録により、利用規約とプライバシーポリシーを確認したものとします
-            </Text>
+            <View style={styles.policyRow}>
+              <Text style={styles.policy}>登録により、</Text>
+              <Link href={'/terms' as Href} style={styles.policyLink}>
+                利用規約
+              </Link>
+              <Text style={styles.policy}>と</Text>
+              <Link href={'/privacy' as Href} style={styles.policyLink}>
+                プライバシーポリシー
+              </Link>
+              <Text style={styles.policy}>に同意したものとします</Text>
+            </View>
             <Link href="/login" style={styles.link}>
               ログイン画面へ戻る
             </Link>
@@ -134,7 +142,17 @@ function createStyles(colors: ThemeColors) {
     policy: {
       color: colors.mutedText,
       fontSize: typography.note,
-      textAlign: 'center',
+    },
+    policyRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
+    policyLink: {
+      color: colors.primary,
+      fontSize: typography.note,
+      fontWeight: '700',
     },
     link: {
       color: colors.primary,
