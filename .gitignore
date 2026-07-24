@@ -70,6 +70,15 @@ web_modules/
 .env.*
 !.env.example
 
+# Expo
+.expo/
+dist/
+web-build/
+
+# tests
+coverage/
+!.env.example
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
