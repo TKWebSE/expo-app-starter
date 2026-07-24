@@ -7,11 +7,11 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppConfirmDialog } from '@/components/ui/AppConfirmDialog';
 import { AppSnackbar } from '@/components/ui/AppSnackbar';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, radii, spacing, typography } from '@/theme/tokens';
 import {
   type ThemePreference,
   useThemePreference,
 } from '@/theme/ThemeProvider';
+import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 export default function SettingsScreen() {
   const params = useLocalSearchParams<{ notice?: string }>();
@@ -24,7 +24,8 @@ export default function SettingsScreen() {
   const signOut = useAuthStore((state) => state.signOut);
   const clearError = useAuthStore((state) => state.clearError);
   const closeNotice = useCallback(() => setNotice(null), []);
-  const { preference, setPreference } = useThemePreference();
+  const { colors, preference, setPreference } = useThemePreference();
+  const styles = createStyles(colors);
 
   if (status === 'unauthenticated') {
     return <Redirect href="/login" />;
@@ -114,41 +115,43 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  card: {
-    gap: spacing[4],
-    borderRadius: radii.card,
-    backgroundColor: colors.surface,
-    padding: spacing[6],
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: typography.sectionTitle,
-    fontWeight: '700',
-  },
-  label: { color: colors.mutedText, fontSize: typography.helper },
-  value: { color: colors.text, fontSize: typography.body },
-  themeOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
-  themeOption: {
-    minHeight: 44,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.control,
-    paddingHorizontal: spacing[4],
-  },
-  themeOptionActive: {
-    borderColor: colors.primary,
-    backgroundColor: '#DBEAFE',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    card: {
+      gap: spacing[4],
+      borderRadius: radii.card,
+      backgroundColor: colors.surface,
+      padding: spacing[6],
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: typography.sectionTitle,
+      fontWeight: '700',
+    },
+    label: { color: colors.mutedText, fontSize: typography.helper },
+    value: { color: colors.text, fontSize: typography.body },
+    themeOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
+    themeOption: {
+      minHeight: 44,
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radii.control,
+      paddingHorizontal: spacing[4],
+    },
+    themeOptionActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '26',
+    },
+  });
+}

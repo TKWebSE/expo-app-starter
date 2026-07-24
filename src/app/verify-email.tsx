@@ -6,9 +6,12 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppSnackbar } from '@/components/ui/AppSnackbar';
 import { AuthScreen } from '@/features/auth/components/AuthScreen';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 export default function VerifyEmailScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const email = useAuthStore((state) => state.pendingVerificationEmail);
   const [notice, setNotice] = useState<string | null>(null);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -56,25 +59,27 @@ export default function VerifyEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    color: colors.mutedText,
-    fontSize: typography.helper,
-  },
-  email: {
-    color: colors.text,
-    fontSize: typography.body,
-    fontWeight: '600',
-  },
-  note: {
-    marginTop: spacing[2],
-    color: colors.mutedText,
-    fontSize: typography.helper,
-  },
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    label: {
+      color: colors.mutedText,
+      fontSize: typography.helper,
+    },
+    email: {
+      color: colors.text,
+      fontSize: typography.body,
+      fontWeight: '600',
+    },
+    note: {
+      marginTop: spacing[2],
+      color: colors.mutedText,
+      fontSize: typography.helper,
+    },
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+  });
+}

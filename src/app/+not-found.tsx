@@ -1,9 +1,12 @@
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 export default function NotFoundScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -16,24 +19,26 @@ export default function NotFoundScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[4],
-    backgroundColor: colors.background,
-    padding: spacing[6],
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    minHeight: 44,
-    paddingVertical: spacing[2],
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing[4],
+      backgroundColor: colors.background,
+      padding: spacing[6],
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      minHeight: 44,
+      paddingVertical: spacing[2],
+    },
+  });
+}

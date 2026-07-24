@@ -11,11 +11,14 @@ import { AppTextField } from '@/components/ui/AppTextField';
 import { AuthScreen } from '@/features/auth/components/AuthScreen';
 import { resetPasswordSchema } from '@/features/auth/schemas/authSchemas';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 type Form = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const [sentEmail, setSentEmail] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -90,16 +93,18 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  notice: {
-    color: colors.success,
-    fontSize: typography.helper,
-    marginBottom: spacing[2],
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    notice: {
+      color: colors.success,
+      fontSize: typography.helper,
+      marginBottom: spacing[2],
+    },
+  });
+}

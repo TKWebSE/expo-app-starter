@@ -9,8 +9,11 @@ import {
 } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { colors as lightColors, darkColors, type ThemeColors } from './tokens';
+
 export type ThemePreference = 'system' | 'light' | 'dark';
 type ThemeContextValue = {
+  colors: ThemeColors;
   preference: ThemePreference;
   resolved: 'light' | 'dark';
   ready: boolean;
@@ -46,7 +49,13 @@ export function ThemeProvider({ children }: PropsWithChildren) {
         : 'light'
       : preference;
   const value = useMemo(
-    () => ({ preference, resolved, ready, setPreference }),
+    () => ({
+      colors: resolved === 'dark' ? darkColors : lightColors,
+      preference,
+      resolved,
+      ready,
+      setPreference,
+    }),
     [preference, resolved, ready],
   );
   return (

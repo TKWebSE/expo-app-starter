@@ -11,11 +11,14 @@ import { AppTextField } from '@/components/ui/AppTextField';
 import { AuthScreen } from '@/features/auth/components/AuthScreen';
 import { loginSchema } from '@/features/auth/schemas/authSchemas';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const params = useLocalSearchParams<{ notice?: string }>();
   const [showsPassword, setShowsPassword] = useState(false);
   const status = useAuthStore((state) => state.status);
@@ -123,20 +126,22 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: { flex: 1 },
-  links: {
-    alignItems: 'center',
-    gap: spacing[2],
-  },
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-  },
-  passwordToggle: {
-    minHeight: 44,
-    alignSelf: 'flex-end',
-    justifyContent: 'center',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    page: { flex: 1 },
+    links: {
+      alignItems: 'center',
+      gap: spacing[2],
+    },
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+    },
+    passwordToggle: {
+      minHeight: 44,
+      alignSelf: 'flex-end',
+      justifyContent: 'center',
+    },
+  });
+}

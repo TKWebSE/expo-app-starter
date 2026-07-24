@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 type Props = PropsWithChildren<{ title: string; scroll?: boolean }>;
 const nav = [
@@ -19,6 +20,8 @@ const nav = [
 ];
 
 export function AppShell({ children, title, scroll = true }: Props) {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const { width } = useWindowDimensions();
   const pathname = usePathname();
   const wide = width >= 768;
@@ -36,6 +39,7 @@ export function AppShell({ children, title, scroll = true }: Props) {
                   key={item.href}
                   {...item}
                   active={pathname === item.href}
+                  colors={colors}
                 />
               ))}
             </View>
@@ -63,6 +67,7 @@ export function AppShell({ children, title, scroll = true }: Props) {
                   {...item}
                   active={pathname === item.href}
                   compact
+                  colors={colors}
                 />
               ))}
             </View>
@@ -79,13 +84,16 @@ function NavItem({
   href,
   icon,
   label,
+  colors,
 }: {
   active: boolean;
   compact?: boolean;
   href: '/home' | '/settings';
   icon: string;
   label: string;
+  colors: ThemeColors;
 }) {
+  const styles = createStyles(colors);
   return (
     <Pressable
       accessibilityRole="button"
@@ -104,64 +112,66 @@ function NavItem({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.background },
-  row: { flex: 1, flexDirection: 'row' },
-  sidebar: {
-    width: 240,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: spacing[6],
-  },
-  brand: {
-    color: colors.text,
-    fontSize: typography.sectionTitle,
-    fontWeight: '800',
-  },
-  navList: { flex: 1, gap: spacing[2], paddingTop: spacing[8] },
-  version: { color: colors.mutedText, fontSize: typography.note },
-  main: { flex: 1 },
-  header: {
-    minHeight: 56,
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing[6],
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  scroll: { flexGrow: 1 },
-  content: {
-    width: '100%',
-    maxWidth: 1200,
-    alignSelf: 'center',
-    padding: spacing[6],
-    gap: spacing[4],
-  },
-  bottomNav: {
-    minHeight: 64,
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  navItem: {
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: radii.control,
-    paddingHorizontal: spacing[4],
-  },
-  navCompact: { flex: 1, alignItems: 'center', borderRadius: 0 },
-  navActive: { backgroundColor: '#DBEAFE' },
-  navText: {
-    color: colors.mutedText,
-    fontSize: typography.helper,
-    fontWeight: '600',
-  },
-  navTextActive: { color: colors.primary },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.background },
+    row: { flex: 1, flexDirection: 'row' },
+    sidebar: {
+      width: 240,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+      backgroundColor: colors.surface,
+      padding: spacing[6],
+    },
+    brand: {
+      color: colors.text,
+      fontSize: typography.sectionTitle,
+      fontWeight: '800',
+    },
+    navList: { flex: 1, gap: spacing[2], paddingTop: spacing[8] },
+    version: { color: colors.mutedText, fontSize: typography.note },
+    main: { flex: 1 },
+    header: {
+      minHeight: 56,
+      justifyContent: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing[6],
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    scroll: { flexGrow: 1 },
+    content: {
+      width: '100%',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      padding: spacing[6],
+      gap: spacing[4],
+    },
+    bottomNav: {
+      minHeight: 64,
+      flexDirection: 'row',
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    navItem: {
+      minHeight: 44,
+      justifyContent: 'center',
+      borderRadius: radii.control,
+      paddingHorizontal: spacing[4],
+    },
+    navCompact: { flex: 1, alignItems: 'center', borderRadius: 0 },
+    navActive: { backgroundColor: colors.primary + '26' },
+    navText: {
+      color: colors.mutedText,
+      fontSize: typography.helper,
+      fontWeight: '600',
+    },
+    navTextActive: { color: colors.primary },
+  });
+}

@@ -2,9 +2,12 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { AppErrorState } from '@/components/ui/AppState';
-import { colors, spacing } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors } from '@/theme/tokens';
 
 export default function ErrorScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
       <AppErrorState onRetry={() => router.replace('/')} />
@@ -12,11 +15,13 @@ export default function ErrorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    padding: spacing[4],
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+      padding: spacing[4],
+    },
+  });
+}

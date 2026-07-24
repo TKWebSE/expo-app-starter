@@ -12,6 +12,24 @@ export const colors = {
   info: '#0369A1',
 } as const;
 
+export type ThemeColors = {
+  [Key in keyof typeof colors]: string;
+};
+
+export const darkColors: ThemeColors = {
+  primary: '#60A5FA',
+  onPrimary: '#0F172A',
+  background: '#0F172A',
+  surface: '#1E293B',
+  border: '#475569',
+  text: '#F8FAFC',
+  mutedText: '#CBD5E1',
+  success: '#4ADE80',
+  warning: '#FACC15',
+  error: '#F87171',
+  info: '#38BDF8',
+};
+
 export const spacing = {
   1: 4,
   2: 8,

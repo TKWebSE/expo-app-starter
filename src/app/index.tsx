@@ -3,9 +3,12 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 export default function IndexScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const status = useAuthStore((state) => state.status);
 
   if (status === 'authenticated') {
@@ -29,26 +32,28 @@ export default function IndexScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[4],
-    padding: spacing[6],
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  description: {
-    color: colors.mutedText,
-    fontSize: typography.body,
-    textAlign: 'center',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing[4],
+      padding: spacing[6],
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    description: {
+      color: colors.mutedText,
+      fontSize: typography.body,
+      textAlign: 'center',
+    },
+  });
+}

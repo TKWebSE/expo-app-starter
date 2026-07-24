@@ -4,9 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppShell } from '@/components/layout/AppShell';
 import { AppButton } from '@/components/ui/AppButton';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 export default function HomeScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const status = useAuthStore((state) => state.status);
   const user = useAuthStore((state) => state.user);
 
@@ -39,29 +42,31 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'flex-start',
-    gap: spacing[4],
-    padding: spacing[6],
-  },
-  card: {
-    gap: spacing[2],
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    padding: spacing[6],
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  description: {
-    color: colors.mutedText,
-    fontSize: typography.body,
-  },
-  email: {
-    color: colors.text,
-    fontSize: typography.body,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      alignItems: 'flex-start',
+      gap: spacing[4],
+      padding: spacing[6],
+    },
+    card: {
+      gap: spacing[2],
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      padding: spacing[6],
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    description: {
+      color: colors.mutedText,
+      fontSize: typography.body,
+    },
+    email: {
+      color: colors.text,
+      fontSize: typography.body,
+    },
+  });
+}

@@ -10,11 +10,14 @@ import { AppTextField } from '@/components/ui/AppTextField';
 import { AuthScreen } from '@/features/auth/components/AuthScreen';
 import { newPasswordSchema } from '@/features/auth/schemas/authSchemas';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
-import { colors, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { type ThemeColors, typography } from '@/theme/tokens';
 
 type Form = z.infer<typeof newPasswordSchema>;
 
 export default function NewPasswordScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
   const error = useAuthStore((state) => state.error);
   const updatePassword = useAuthStore((state) => state.updatePassword);
@@ -94,11 +97,13 @@ export default function NewPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+  });
+}

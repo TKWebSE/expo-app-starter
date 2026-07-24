@@ -27,7 +27,8 @@ import {
   loadProfile,
   saveDisplayName,
 } from '@/features/profile/utils/profileWorkflow';
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
@@ -40,6 +41,8 @@ function errorMessage(error: unknown): string {
 }
 
 export default function ProfileScreen() {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const [notification, setNotification] = useState<string | null>(null);
   const [dismissedLoadError, setDismissedLoadError] = useState(false);
   const [confirmsDiscard, setConfirmsDiscard] = useState(false);
@@ -189,37 +192,39 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  safeArea: { flex: 1, backgroundColor: colors.background },
-  content: {
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-    gap: spacing[4],
-    padding: spacing[4],
-  },
-  header: { gap: spacing[2] },
-  back: {
-    minHeight: 44,
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-  },
-  link: {
-    color: colors.primary,
-    fontSize: typography.body,
-    fontWeight: '600',
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.screenTitle,
-    fontWeight: '700',
-  },
-  card: {
-    gap: spacing[4],
-    borderRadius: radii.card,
-    backgroundColor: colors.surface,
-    padding: spacing[6],
-  },
-  helper: { color: colors.mutedText, fontSize: typography.body },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    flex: { flex: 1 },
+    safeArea: { flex: 1, backgroundColor: colors.background },
+    content: {
+      width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
+      gap: spacing[4],
+      padding: spacing[4],
+    },
+    header: { gap: spacing[2] },
+    back: {
+      minHeight: 44,
+      alignSelf: 'flex-start',
+      justifyContent: 'center',
+    },
+    link: {
+      color: colors.primary,
+      fontSize: typography.body,
+      fontWeight: '600',
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.screenTitle,
+      fontWeight: '700',
+    },
+    card: {
+      gap: spacing[4],
+      borderRadius: radii.card,
+      backgroundColor: colors.surface,
+      padding: spacing[6],
+    },
+    helper: { color: colors.mutedText, fontSize: typography.body },
+  });
+}

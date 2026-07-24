@@ -6,7 +6,8 @@ import {
   type PressableProps,
 } from 'react-native';
 
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
 
 type AppButtonProps = Omit<PressableProps, 'children'> & {
   label: string;
@@ -19,6 +20,8 @@ export function AppButton({
   loading = false,
   ...props
 }: AppButtonProps) {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   const isDisabled = disabled || loading;
 
   return (
@@ -42,26 +45,28 @@ export function AppButton({
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    minHeight: 44,
-    minWidth: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radii.control,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[2],
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  label: {
-    color: colors.onPrimary,
-    fontSize: typography.button,
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    button: {
+      minHeight: 44,
+      minWidth: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radii.control,
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing[4],
+      paddingVertical: spacing[2],
+    },
+    pressed: {
+      opacity: 0.8,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    label: {
+      color: colors.onPrimary,
+      fontSize: typography.button,
+      fontWeight: '600',
+    },
+  });
+}

@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { useThemePreference } from '@/theme/ThemeProvider';
+import { radii, spacing, type ThemeColors, typography } from '@/theme/tokens';
 import { AppButton } from './AppButton';
 
 export function AppLoadingState({
@@ -8,6 +9,8 @@ export function AppLoadingState({
 }: {
   message?: string;
 }) {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   return (
     <View accessibilityLiveRegion="polite" style={styles.card}>
       <ActivityIndicator color={colors.primary} />
@@ -25,6 +28,8 @@ export function AppEmptyState({
   actionLabel?: string;
   onAction?: () => void;
 }) {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   return (
     <View style={styles.card}>
       <Text style={styles.title}>データがありません</Text>
@@ -43,6 +48,8 @@ export function AppErrorState({
   message?: string;
   onRetry: () => void;
 }) {
+  const { colors } = useThemePreference();
+  const styles = createStyles(colors);
   return (
     <View accessibilityRole="alert" style={styles.card}>
       <Text style={styles.title}>読み込みに失敗しました</Text>
@@ -52,22 +59,24 @@ export function AppErrorState({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    alignItems: 'center',
-    gap: spacing[4],
-    borderRadius: radii.card,
-    backgroundColor: colors.surface,
-    padding: spacing[6],
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.sectionTitle,
-    fontWeight: '700',
-  },
-  text: {
-    color: colors.mutedText,
-    fontSize: typography.body,
-    textAlign: 'center',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      alignItems: 'center',
+      gap: spacing[4],
+      borderRadius: radii.card,
+      backgroundColor: colors.surface,
+      padding: spacing[6],
+    },
+    title: {
+      color: colors.text,
+      fontSize: typography.sectionTitle,
+      fontWeight: '700',
+    },
+    text: {
+      color: colors.mutedText,
+      fontSize: typography.body,
+      textAlign: 'center',
+    },
+  });
+}
