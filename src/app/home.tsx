@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,7 +24,10 @@ export default function HomeScreen() {
         <Text selectable style={styles.email}>
           {user?.email}
         </Text>
-        <AppButton label="動作確認" onPress={() => undefined} />
+        <AppButton
+          label="設定を開く"
+          onPress={() => router.push('/settings')}
+        />
       </View>
     </SafeAreaView>
   );
