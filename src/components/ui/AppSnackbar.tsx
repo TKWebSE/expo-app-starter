@@ -1,19 +1,43 @@
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
+import {
+  SNACKBAR_DURATION_MS,
+  snackbarColor,
+  type SnackbarType,
+} from './snackbar';
+
 type AppSnackbarProps = {
   message: string | null;
   onClose: () => void;
+  type?: SnackbarType;
 };
 
-export function AppSnackbar({ message, onClose }: AppSnackbarProps) {
+export function AppSnackbar({
+  message,
+  onClose,
+  type = 'error',
+}: AppSnackbarProps) {
+  useEffect(() => {
+    if (!message) {
+      return;
+    }
+
+    const timer = setTimeout(onClose, SNACKBAR_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [message, onClose]);
+
   if (!message) {
     return null;
   }
 
   return (
-    <View accessibilityLiveRegion="assertive" style={styles.container}>
+    <View
+      accessibilityLiveRegion={type === 'error' ? 'assertive' : 'polite'}
+      style={[styles.container, { backgroundColor: snackbarColor(type) }]}
+    >
       <Text style={styles.message}>{message}</Text>
       <Pressable
         accessibilityLabel="通知を閉じる"
@@ -39,7 +63,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[2],
     borderRadius: radii.control,
-    backgroundColor: colors.error,
     padding: spacing[4],
   },
   message: {
