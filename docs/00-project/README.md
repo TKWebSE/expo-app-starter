@@ -19,4 +19,4 @@ Expo・React Native・TypeScriptを使うアプリを素早く作り始めるた
 
 ## 現在の段階
 
-テスト設計（TDD）
+実装（TDD）
