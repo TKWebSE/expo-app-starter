@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, Redirect, router } from 'expo-router';
+import { Link, Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -16,6 +16,7 @@ import { colors, spacing, typography } from '@/theme/tokens';
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
+  const params = useLocalSearchParams<{ notice?: string }>();
   const [showsPassword, setShowsPassword] = useState(false);
   const status = useAuthStore((state) => state.status);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -45,6 +46,11 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.page}>
+      <AppSnackbar
+        message={params.notice ?? null}
+        onClose={() => router.setParams({ notice: '' })}
+        type="success"
+      />
       <AppSnackbar message={error} onClose={clearError} />
       <AuthScreen
         description="メールアドレスとパスワードを入力してください"
@@ -53,7 +59,9 @@ export default function LoginScreen() {
             <Link href="/signup" style={styles.link}>
               新規登録
             </Link>
-            <Text style={styles.disabledLink}>パスワードを忘れた方</Text>
+            <Link href="/reset-password" style={styles.link}>
+              パスワードを忘れた方
+            </Link>
           </View>
         }
         title="ログイン"
@@ -125,10 +133,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: typography.body,
     fontWeight: '600',
-  },
-  disabledLink: {
-    color: colors.mutedText,
-    fontSize: typography.helper,
   },
   passwordToggle: {
     minHeight: 44,

@@ -1,7 +1,7 @@
 import { Redirect, router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppShell } from '@/components/layout/AppShell';
 import { AppButton } from '@/components/ui/AppButton';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
 import { colors, spacing, typography } from '@/theme/tokens';
@@ -15,12 +15,12 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <AppShell title="ホーム">
       <View style={styles.container}>
-        <Text accessibilityRole="header" style={styles.title}>
-          ホーム
+        <Text style={styles.title}>ようこそ</Text>
+        <Text style={styles.description}>
+          認証とアプリ基盤は正常に動作しています。
         </Text>
-        <Text style={styles.description}>ログインできました。</Text>
         <Text selectable style={styles.email}>
           {user?.email}
         </Text>
@@ -29,20 +29,26 @@ export default function HomeScreen() {
           onPress={() => router.push('/settings')}
         />
       </View>
-    </SafeAreaView>
+      <View style={styles.card}>
+        <Text style={styles.title}>Repository 接続サンプル</Text>
+        <Text style={styles.description}>
+          プロフィール画面でSupabaseとの取得・更新を確認できます。
+        </Text>
+      </View>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
     gap: spacing[4],
+    padding: spacing[6],
+  },
+  card: {
+    gap: spacing[2],
+    borderRadius: 12,
+    backgroundColor: colors.surface,
     padding: spacing[6],
   },
   title: {

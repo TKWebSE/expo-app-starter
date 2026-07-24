@@ -1,35 +1,58 @@
 import { Link, Redirect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
+import { AppButton } from '@/components/ui/AppButton';
+import { AppSnackbar } from '@/components/ui/AppSnackbar';
 import { AuthScreen } from '@/features/auth/components/AuthScreen';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
 import { colors, spacing, typography } from '@/theme/tokens';
 
 export default function VerifyEmailScreen() {
   const email = useAuthStore((state) => state.pendingVerificationEmail);
+  const [notice, setNotice] = useState<string | null>(null);
+  const isSubmitting = useAuthStore((state) => state.isSubmitting);
+  const error = useAuthStore((state) => state.error);
+  const resend = useAuthStore((state) => state.resendVerification);
+  const clearError = useAuthStore((state) => state.clearError);
+  const closeNotice = useCallback(() => setNotice(null), []);
 
   if (!email) {
     return <Redirect href="/signup" />;
   }
 
   return (
-    <AuthScreen
-      description="メール内のリンクを開いて登録を完了してください"
-      footer={
-        <Link href="/login" style={styles.link}>
-          ログイン画面へ戻る
-        </Link>
-      }
-      title="確認メールを送信しました"
-    >
-      <Text style={styles.label}>送信先</Text>
-      <Text selectable style={styles.email}>
-        {email}
-      </Text>
-      <Text style={styles.note}>
-        メールが届かない場合は、迷惑メールフォルダも確認してください。
-      </Text>
-    </AuthScreen>
+    <>
+      <AppSnackbar
+        message={notice ?? error}
+        onClose={notice ? closeNotice : clearError}
+        type={notice ? 'success' : 'error'}
+      />
+      <AuthScreen
+        description="メール内のリンクを開いて登録を完了してください"
+        footer={
+          <Link href="/login" style={styles.link}>
+            ログイン画面へ戻る
+          </Link>
+        }
+        title="確認メールを送信しました"
+      >
+        <Text style={styles.label}>送信先</Text>
+        <Text selectable style={styles.email}>
+          {email}
+        </Text>
+        <Text style={styles.note}>
+          メールが届かない場合は、迷惑メールフォルダも確認してください。
+        </Text>
+        <AppButton
+          label="確認メールを再送"
+          loading={isSubmitting}
+          onPress={async () => {
+            if (await resend()) setNotice('確認メールを再送しました');
+          }}
+        />
+      </AuthScreen>
+    </>
   );
 }
 

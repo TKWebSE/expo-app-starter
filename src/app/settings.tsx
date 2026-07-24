@@ -1,13 +1,17 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AppShell } from '@/components/layout/AppShell';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppConfirmDialog } from '@/components/ui/AppConfirmDialog';
 import { AppSnackbar } from '@/components/ui/AppSnackbar';
 import { useAuthStore } from '@/features/auth/stores/AuthProvider';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
+import {
+  type ThemePreference,
+  useThemePreference,
+} from '@/theme/ThemeProvider';
 
 export default function SettingsScreen() {
   const params = useLocalSearchParams<{ notice?: string }>();
@@ -20,6 +24,7 @@ export default function SettingsScreen() {
   const signOut = useAuthStore((state) => state.signOut);
   const clearError = useAuthStore((state) => state.clearError);
   const closeNotice = useCallback(() => setNotice(null), []);
+  const { preference, setPreference } = useThemePreference();
 
   if (status === 'unauthenticated') {
     return <Redirect href="/login" />;
@@ -33,49 +38,69 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <AppShell title="設定">
       <AppSnackbar
         message={notice ?? error}
         onClose={notice ? closeNotice : clearError}
         type={notice ? 'success' : 'error'}
       />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable
-            accessibilityLabel="ホームへ戻る"
-            accessibilityRole="button"
-            onPress={() => router.replace('/home')}
-            style={styles.back}
-          >
-            <Text style={styles.link}>戻る</Text>
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.title}>
-            設定
-          </Text>
-        </View>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>アカウント</Text>
+        <Text style={styles.label}>メールアドレス</Text>
+        <Text selectable style={styles.value}>
+          {user?.email}
+        </Text>
+        <AppButton
+          label="プロフィールを編集"
+          onPress={() => router.push('/profile')}
+        />
+      </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>アカウント</Text>
-          <Text style={styles.label}>メールアドレス</Text>
-          <Text selectable style={styles.value}>
-            {user?.email}
-          </Text>
-          <AppButton
-            label="プロフィールを編集"
-            onPress={() => router.push('/profile')}
-          />
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>表示</Text>
+        <Text style={styles.label}>テーマ</Text>
+        <View style={styles.themeOptions}>
+          {(
+            [
+              ['system', '端末設定'],
+              ['light', 'ライト'],
+              ['dark', 'ダーク'],
+            ] as const
+          ).map(([value, label]) => (
+            <Pressable
+              key={value}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: preference === value }}
+              onPress={() => setPreference(value as ThemePreference)}
+              style={[
+                styles.themeOption,
+                preference === value && styles.themeOptionActive,
+              ]}
+            >
+              <Text style={preference === value ? styles.link : styles.value}>
+                {label}
+              </Text>
+            </Pressable>
+          ))}
         </View>
+      </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>操作</Text>
-          <AppButton
-            disabled={isSubmitting}
-            label="ログアウト"
-            loading={isSubmitting}
-            onPress={() => setConfirmsLogout(true)}
-          />
-        </View>
-      </ScrollView>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>アプリ情報</Text>
+        <Text style={styles.value}>Expo App Starter v0.1.0</Text>
+        <Text style={styles.link}>利用規約</Text>
+        <Text style={styles.link}>プライバシーポリシー</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>操作</Text>
+        <AppButton
+          disabled={isSubmitting}
+          label="ログアウト"
+          loading={isSubmitting}
+          onPress={() => setConfirmsLogout(true)}
+        />
+      </View>
       <AppConfirmDialog
         confirmLabel="ログアウト"
         danger
@@ -85,25 +110,11 @@ export default function SettingsScreen() {
         title="ログアウトの確認"
         visible={confirmsLogout}
       />
-    </SafeAreaView>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.background },
-  content: {
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-    gap: spacing[4],
-    padding: spacing[4],
-  },
-  header: { gap: spacing[2] },
-  back: {
-    minHeight: 44,
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-  },
   link: {
     color: colors.primary,
     fontSize: typography.body,
@@ -127,4 +138,17 @@ const styles = StyleSheet.create({
   },
   label: { color: colors.mutedText, fontSize: typography.helper },
   value: { color: colors.text, fontSize: typography.body },
+  themeOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
+  themeOption: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    paddingHorizontal: spacing[4],
+  },
+  themeOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: '#DBEAFE',
+  },
 });

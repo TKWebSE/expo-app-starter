@@ -1,4 +1,5 @@
 import type { User } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 
 import { deriveDisplayName } from '@/features/profile/utils/deriveDisplayName';
 import { supabase } from '@/services/supabase/client';
@@ -92,8 +93,24 @@ export class SupabaseAuthRepository implements AuthRepository {
     }
   }
 
+  async resendSignupConfirmation(email: string): Promise<void> {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+
+    if (error) {
+      throw authenticationError('確認メールを再送できませんでした', error);
+    }
+  }
+
   async sendPasswordReset(email: string): Promise<void> {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo:
+        typeof window === 'undefined'
+          ? Linking.createURL('/new-password')
+          : `${window.location.origin}/new-password`,
+    });
 
     if (error) {
       throw authenticationError(

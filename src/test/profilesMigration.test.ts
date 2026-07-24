@@ -19,6 +19,9 @@ describe('profiles migration contract', () => {
 
   it('RLSを有効にし本人の参照・追加・更新だけを許可する', () => {
     expect(migration).toContain('enable row level security');
+    expect(migration).toContain(
+      'grant select, insert, update on table public.profiles to authenticated',
+    );
     expect(migration).toContain('for select');
     expect(migration).toContain('for insert');
     expect(migration).toContain('for update');

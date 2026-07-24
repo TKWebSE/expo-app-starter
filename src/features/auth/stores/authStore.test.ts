@@ -22,6 +22,7 @@ function createRepository(
     signUp: vi.fn().mockResolvedValue(user),
     signIn: vi.fn().mockResolvedValue(user),
     signOut: vi.fn().mockResolvedValue(undefined),
+    resendSignupConfirmation: vi.fn().mockResolvedValue(undefined),
     sendPasswordReset: vi.fn().mockResolvedValue(undefined),
     updatePassword: vi.fn().mockResolvedValue(undefined),
     ...overrides,
@@ -127,5 +128,38 @@ describe('authStore', () => {
       pendingVerificationEmail: user.email,
       error: null,
     });
+  });
+
+  it('確認対象メールアドレスへ確認メールを再送する', async () => {
+    const repository = createRepository();
+    const store = createAuthStore(repository);
+    await store.getState().signUp({ email: user.email, password: 'password' });
+
+    await expect(store.getState().resendVerification()).resolves.toBe(true);
+    expect(repository.resendSignupConfirmation).toHaveBeenCalledWith(
+      user.email,
+    );
+  });
+
+  it('パスワード再設定メールを送信する', async () => {
+    const repository = createRepository();
+    const store = createAuthStore(repository);
+
+    await expect(store.getState().sendPasswordReset(user.email)).resolves.toBe(
+      true,
+    );
+    expect(repository.sendPasswordReset).toHaveBeenCalledWith(user.email);
+  });
+
+  it('パスワード更新後はセッションを終了する', async () => {
+    const repository = createRepository();
+    const store = createAuthStore(repository);
+
+    await expect(store.getState().updatePassword('new-password')).resolves.toBe(
+      true,
+    );
+    expect(repository.updatePassword).toHaveBeenCalledWith('new-password');
+    expect(repository.signOut).toHaveBeenCalled();
+    expect(store.getState().status).toBe('unauthenticated');
   });
 });

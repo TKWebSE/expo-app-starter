@@ -11,6 +11,8 @@ create table public.profiles (
 
 alter table public.profiles enable row level security;
 
+grant select, insert, update on table public.profiles to authenticated;
+
 create policy "Users can read their own profile"
 on public.profiles
 for select

@@ -18,6 +18,9 @@ export type AuthStore = {
   signIn: (input: SignUpInput) => Promise<boolean>;
   signUp: (input: SignUpInput) => Promise<boolean>;
   signOut: () => Promise<boolean>;
+  resendVerification: () => Promise<boolean>;
+  sendPasswordReset: (email: string) => Promise<boolean>;
+  updatePassword: (password: string) => Promise<boolean>;
   clearError: () => void;
   dispose: () => void;
 };
@@ -131,6 +134,47 @@ export function createAuthStore(
           isSubmitting: false,
           error: messageFrom(error),
         });
+        return false;
+      }
+    },
+
+    resendVerification: async () => {
+      const email = get().pendingVerificationEmail;
+      if (!email || get().isSubmitting) return false;
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.resendSignupConfirmation(email);
+        set({ isSubmitting: false });
+        return true;
+      } catch (error) {
+        set({ isSubmitting: false, error: messageFrom(error) });
+        return false;
+      }
+    },
+
+    sendPasswordReset: async (email) => {
+      if (get().isSubmitting) return false;
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.sendPasswordReset(email);
+        set({ isSubmitting: false });
+        return true;
+      } catch (error) {
+        set({ isSubmitting: false, error: messageFrom(error) });
+        return false;
+      }
+    },
+
+    updatePassword: async (password) => {
+      if (get().isSubmitting) return false;
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.updatePassword(password);
+        await repository.signOut();
+        set({ status: 'unauthenticated', user: null, isSubmitting: false });
+        return true;
+      } catch (error) {
+        set({ isSubmitting: false, error: messageFrom(error) });
         return false;
       }
     },
