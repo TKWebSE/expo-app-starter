@@ -6,6 +6,7 @@ import { AppError } from '@/types/AppError';
 
 import type {
   AuthRepository,
+  AuthStateListener,
   AuthUser,
   SignUpInput,
 } from '../types/AuthRepository';
@@ -29,6 +30,26 @@ function authenticationError(message: string, cause: unknown): AppError {
 }
 
 export class SupabaseAuthRepository implements AuthRepository {
+  async getCurrentUser(): Promise<AuthUser | null> {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      throw authenticationError('認証状態を確認できませんでした', error);
+    }
+
+    return data.session ? toAuthUser(data.session.user) : null;
+  }
+
+  onAuthStateChange(listener: AuthStateListener): () => void {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      listener(session ? toAuthUser(session.user) : null);
+    });
+
+    return () => subscription.unsubscribe();
+  }
+
   async signUp({ email, password }: SignUpInput): Promise<AuthUser> {
     const { data, error } = await supabase.auth.signUp({
       email,
